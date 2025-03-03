@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { MenuIcon, X } from 'lucide-react';
+import { MenuIcon, X, User } from 'lucide-react';
 import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/clerk-react';
 import { Button } from '@/components/ui/button';
 import NetworkStatus from '../NetworkStatus';
@@ -80,9 +80,18 @@ const Header: React.FC = () => {
           
           <SignedIn>
             <div className="flex items-center space-x-4">
-              <div className="text-sm font-medium">
-                {user?.firstName || user?.username}
-              </div>
+              <Link 
+                to="/profile"
+                className={cn(
+                  'text-sm font-medium transition-colors hover:text-primary flex items-center',
+                  location.pathname === '/profile'
+                    ? 'text-primary'
+                    : 'text-muted-foreground'
+                )}
+              >
+                <User className="h-4 w-4 mr-1" />
+                Profile
+              </Link>
               <UserButton afterSignOutUrl="/" />
             </div>
           </SignedIn>
@@ -146,6 +155,21 @@ const Header: React.FC = () => {
                   {item.label}
                 </Link>
               ))}
+              
+              <SignedIn>
+                <Link
+                  to="/profile"
+                  className={cn(
+                    'flex items-center py-2 text-base font-medium transition-colors',
+                    location.pathname === '/profile'
+                      ? 'text-primary'
+                      : 'text-muted-foreground hover:text-primary'
+                  )}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </Link>
+              </SignedIn>
               
               <SignedOut>
                 <div className="py-2 space-y-2">

@@ -4,6 +4,7 @@ import { Transaction, StoredTransaction } from '../types';
 import { getTransactions } from '../utils/storage';
 import { syncTransactionToBlockchain } from '../utils/blockchain';
 import { getNetworkState } from '../utils/network';
+import { useCredits } from '@/hooks/useCredits';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -21,6 +22,7 @@ const TransactionList: React.FC = () => {
   const [transactions, setTransactions] = useState<StoredTransaction[]>([]);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(getNetworkState().isOnline);
+  const { updateCredits } = useCredits();
   
   useEffect(() => {
     loadTransactions();
@@ -70,6 +72,8 @@ const TransactionList: React.FC = () => {
       
       for (const transaction of pendingTransactions) {
         await syncTransactionToBlockchain(transaction);
+        
+        updateCredits(transaction);
       }
       
       loadTransactions();

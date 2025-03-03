@@ -23,3 +23,17 @@ export interface NetworkState {
   isOnline: boolean;
   lastSynced: number | null;
 }
+
+export interface UserCredit {
+  balance: number;
+  history: CreditHistory[];
+}
+
+export interface CreditHistory {
+  id: string;
+  amount: number;
+  type: 'credit' | 'debit';
+  transactionId: string;
+  timestamp: number;
+  description: string;
+}

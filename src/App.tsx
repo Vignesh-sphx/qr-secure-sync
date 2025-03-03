@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Generate from "./pages/Generate";
 import Scan from "./pages/Scan";
 import Transactions from "./pages/Transactions";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import AuthWrapper from "./components/auth/AuthWrapper";
@@ -36,6 +37,7 @@ const App = () => (
               <Route path="/generate" element={<AuthWrapper><Generate /></AuthWrapper>} />
               <Route path="/scan" element={<AuthWrapper><Scan /></AuthWrapper>} />
               <Route path="/transactions" element={<AuthWrapper><Transactions /></AuthWrapper>} />
+              <Route path="/profile" element={<AuthWrapper><Profile /></AuthWrapper>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </ClerkLoaded>
