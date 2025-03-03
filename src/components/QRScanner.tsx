@@ -6,6 +6,7 @@ import { saveTransaction } from '../utils/storage';
 import { syncTransactionToBlockchain } from '../utils/blockchain';
 import { verifySignature } from '../utils/crypto';
 import { getNetworkState } from '../utils/network';
+import { useCredits } from '@/hooks/useCredits';
 import { Card, CardContent, CardFooter } from './ui/card';
 import { Button } from './ui/button';
 import { toast } from './ui/use-toast';
@@ -20,6 +21,8 @@ const QRScanner: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [cameraPermission, setCameraPermission] = useState<boolean | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const { updateCredits } = useCredits();
   
   const handleScan = (data: string | null) => {
     if (data) {
@@ -140,6 +143,9 @@ const QRScanner: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
       saveTransaction(scannedData.transaction);
       
+      // Update user's credits based on the transaction
+      updateCredits(scannedData.transaction);
+      
       // Check if online and sync to blockchain
       const { isOnline } = getNetworkState();
       if (isOnline) {
@@ -150,9 +156,9 @@ const QRScanner: React.FC = () => {
       setProcessingStatus('complete');
       toast({
         title: "Transaction Processed",
-        description: isOnline 
-          ? "Transaction has been verified and synced to the blockchain." 
-          : "Transaction has been verified and saved locally. It will sync when online.",
+        description: `${scannedData.transaction.amount.toFixed(2)} credits received. ${isOnline 
+          ? "Transaction has been verified and synced." 
+          : "Transaction will sync when online."}`,
       });
       
     } catch (error) {

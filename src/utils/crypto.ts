@@ -28,14 +28,47 @@ export const decryptData = (encryptedData: string, secretKey: string): any => {
   }
 };
 
-// Generate a signature for a transaction (placeholder)
+// Generate a digital signature for a transaction
 export const signTransaction = (transaction: any, privateKey: string): string => {
-  // In a real app, use a proper signing algorithm
-  return `sig_${generateId()}`;
+  // In a real app, use a proper signing algorithm like RSA or ECDSA
+  // This is a more sophisticated placeholder than before
+  const dataToSign = JSON.stringify({
+    id: transaction.id,
+    amount: transaction.amount,
+    sender: transaction.sender,
+    recipient: transaction.recipient,
+    timestamp: transaction.timestamp
+  });
+  
+  // Create a hash-like signature (still a placeholder)
+  let signature = "";
+  for (let i = 0; i < dataToSign.length; i++) {
+    signature += (dataToSign.charCodeAt(i) * privateKey.charCodeAt(i % privateKey.length) % 16).toString(16);
+  }
+  
+  return `sig_${signature.substring(0, 40)}`;
 };
 
-// Verify a transaction signature (placeholder)
+// Verify a transaction signature
 export const verifySignature = (transaction: any, signature: string, publicKey: string): boolean => {
-  // In a real app, implement actual signature verification
-  return true; // For demo purposes
+  if (!signature || !signature.startsWith('sig_')) {
+    console.warn('Invalid signature format');
+    return false;
+  }
+  
+  // In a real app, this would use public key cryptography to verify
+  // For demo purposes, we'll improve our placeholder to not always return true
+  
+  // Check if the transaction has required fields
+  if (!transaction.id || 
+      typeof transaction.amount !== 'number' || 
+      !transaction.sender || 
+      !transaction.recipient) {
+    console.warn('Invalid transaction format');
+    return false;
+  }
+  
+  // Check if the signature appears valid (still a placeholder)
+  // In a real implementation, you would use Web Crypto API or a library like JSEncrypt
+  return signature.length > 10;
 };

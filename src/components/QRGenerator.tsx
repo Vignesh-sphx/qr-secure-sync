@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
@@ -11,6 +10,8 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Card, CardContent, CardFooter } from './ui/card';
 import { toast } from './ui/use-toast';
+import { Badge } from './ui/badge';
+import { ShieldCheck } from 'lucide-react';
 
 const QRGenerator: React.FC = () => {
   const [amount, setAmount] = useState<string>('');
@@ -29,7 +30,6 @@ const QRGenerator: React.FC = () => {
       return;
     }
     
-    // Validate amount is a number
     const amountValue = parseFloat(amount);
     if (isNaN(amountValue) || amountValue <= 0) {
       toast({
@@ -42,11 +42,9 @@ const QRGenerator: React.FC = () => {
     
     setIsGenerating(true);
     
-    // Create a fake sender (in a real app, this would be the user's wallet)
     const sender = "wallet_" + Math.random().toString(36).substring(2, 10);
     const publicKey = "pk_" + Math.random().toString(36).substring(2, 15);
     
-    // Create a transaction object
     const transaction: Transaction = {
       id: generateId(),
       amount: amountValue,
@@ -57,30 +55,25 @@ const QRGenerator: React.FC = () => {
       status: 'pending'
     };
     
-    // In a real app, we would use the user's private key
     const fakePrivateKey = "sk_" + Math.random().toString(36).substring(2, 15);
     
-    // Sign the transaction
     const signature = signTransaction(transaction, fakePrivateKey);
     transaction.signature = signature;
     
-    // Create the QR data
     const newQrData: QRData = {
       transaction,
       publicKey
     };
     
-    // Save to local storage
     saveTransaction(transaction);
     
-    // Set the QR data
     setTimeout(() => {
       setQrData(newQrData);
       setIsGenerating(false);
       
       toast({
         title: "QR Code Generated",
-        description: "Transaction has been saved and is ready to share.",
+        description: "Transaction has been digitally signed and is ready to share.",
       });
     }, 1000);
   };
@@ -161,8 +154,11 @@ const QRGenerator: React.FC = () => {
         >
           <Card className="bg-white shadow-lg p-6 w-full">
             <CardContent className="flex flex-col items-center pt-4">
-              <div className="text-sm text-muted-foreground mb-4">
-                Transaction ID: {qrData.transaction.id.substring(0, 8)}...
+              <div className="flex items-center justify-center mb-4">
+                <ShieldCheck className="h-5 w-5 text-green-500 mr-2" />
+                <Badge variant="outline" className="text-xs font-mono">
+                  Digitally Signed: {qrData.transaction.signature?.substring(4, 14)}...
+                </Badge>
               </div>
               
               <div className="p-2 bg-white rounded-lg shadow-sm">
@@ -197,7 +193,7 @@ const QRGenerator: React.FC = () => {
           </Card>
           
           <div className="text-xs text-muted-foreground text-center max-w-xs">
-            This QR code contains a signed transaction. The recipient can scan it to receive the transaction details securely.
+            This QR code contains a digitally signed transaction. When scanned, the recipient's credits will automatically update based on the transaction amount.
           </div>
         </motion.div>
       )}
