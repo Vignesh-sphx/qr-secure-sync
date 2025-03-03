@@ -1,10 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import QRScanner from '@/components/QRScanner';
 import Header from '@/components/layout/Header';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle, Camera } from 'lucide-react';
 
 const Scan = () => {
+  const [showPermissionHelp, setShowPermissionHelp] = useState(false);
+  
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -22,10 +26,28 @@ const Scan = () => {
           </p>
         </motion.div>
         
+        {showPermissionHelp && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 max-w-md mx-auto"
+          >
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Camera Permission Required</AlertTitle>
+              <AlertDescription>
+                Please allow camera access in your browser settings to scan QR codes.
+                Look for the camera icon in your address bar to manage permissions.
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
+          onError={() => setShowPermissionHelp(true)}
         >
           <QRScanner />
         </motion.div>
@@ -46,6 +68,17 @@ const Scan = () => {
             The transaction is securely stored locally and will be synchronized with 
             the blockchain when your device is online, preventing double-spending.
           </p>
+          
+          <div className="mt-8 p-4 bg-muted/30 rounded-lg">
+            <div className="flex items-center justify-center mb-3">
+              <Camera className="h-5 w-5 mr-2 text-muted-foreground" />
+              <h4 className="text-md font-medium">Camera Permissions</h4>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              This app requires camera access to scan QR codes. If prompted, please allow camera permissions. 
+              You can always change these settings in your browser or device settings later.
+            </p>
+          </div>
         </motion.div>
       </div>
     </div>

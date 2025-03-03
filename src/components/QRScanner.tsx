@@ -1,6 +1,6 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { QrReader } from 'react-qr-reader';
 import { QRData, Transaction } from '../types';
 import { saveTransaction } from '../utils/storage';
 import { syncTransactionToBlockchain } from '../utils/blockchain';
@@ -18,9 +18,76 @@ const QRScanner: React.FC = () => {
     'idle' | 'verifying' | 'storing' | 'syncing' | 'complete' | 'error'
   >('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [cameraPermission, setCameraPermission] = useState<boolean | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  // This would use a real QR scanner library in production
+  const handleScan = (data: string | null) => {
+    if (data) {
+      try {
+        // Parse the QR code data
+        const parsedData: QRData = JSON.parse(data);
+        setScannedData(parsedData);
+        setScanning(false);
+      } catch (error) {
+        console.error('Error parsing QR code data:', error);
+        setErrorMessage('Invalid QR code format. Please try again.');
+        setProcessingStatus('error');
+        setScanning(false);
+      }
+    }
+  };
+  
+  const handleError = (err: Error) => {
+    console.error('QR Scanner error:', err);
+    setErrorMessage('Failed to access camera. Please check your permissions and try again.');
+    setProcessingStatus('error');
+    setCameraPermission(false);
+    setScanning(false);
+    
+    toast({
+      title: "Camera Error",
+      description: "Failed to access your camera. Please check your camera permissions.",
+      variant: "destructive"
+    });
+  };
+  
+  const startScanning = async () => {
+    setScanning(true);
+    setProcessingStatus('idle');
+    setErrorMessage(null);
+    
+    try {
+      // Check if browser supports getUserMedia
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        // Clean up stream when done
+        stream.getTracks().forEach(track => track.stop());
+        setCameraPermission(true);
+      } else {
+        throw new Error('Camera not supported on this device or browser');
+      }
+    } catch (err) {
+      handleError(err as Error);
+    }
+  };
+  
+  const handleUpload = () => {
+    fileInputRef.current?.click();
+  };
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    // In a real app, this would process the image and scan for QR codes
+    // For this demo, we'll use a fallback simulation if file upload is used
+    simulateScan();
+    
+    // Reset the input so the same file can be selected again
+    e.target.value = '';
+  };
+  
+  // Kept as a fallback for testing when camera is not available
   const simulateScan = () => {
     setScanning(true);
     
@@ -46,22 +113,6 @@ const QRScanner: React.FC = () => {
       setScannedData(fakeQRData);
       setScanning(false);
     }, 2000);
-  };
-  
-  const handleUpload = () => {
-    fileInputRef.current?.click();
-  };
-  
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-    
-    // In a real app, this would process the image and scan for QR codes
-    // For this demo, we'll just simulate a successful scan
-    simulateScan();
-    
-    // Reset the input so the same file can be selected again
-    e.target.value = '';
   };
   
   const processTransaction = async () => {
@@ -149,11 +200,31 @@ const QRScanner: React.FC = () => {
             <CardContent className="pt-6 pb-4 flex flex-col items-center">
               <div className="w-full max-w-xs aspect-square bg-muted/30 rounded-lg mb-6 relative overflow-hidden">
                 {scanning ? (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/50">
-                    <div className="flex flex-col items-center">
-                      <Loader2 className="h-8 w-8 text-primary animate-spin" />
-                      <span className="mt-2 text-sm">Scanning...</span>
+                  <div className="absolute inset-0">
+                    <QrReader
+                      constraints={{
+                        facingMode: 'environment'
+                      }}
+                      onResult={(result, error) => {
+                        if (result) {
+                          handleScan(result.getText());
+                        }
+                        if (error && error?.name !== 'NotFoundException') {
+                          console.error('QR scan error:', error);
+                        }
+                      }}
+                      containerStyle={{ width: '100%', height: '100%' }}
+                      videoStyle={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      scanDelay={500}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                      <div className="w-48 h-48 border-2 border-primary/70 rounded-lg"></div>
                     </div>
+                  </div>
+                ) : cameraPermission === false ? (
+                  <div className="absolute inset-0 flex items-center justify-center flex-col">
+                    <AlertCircle className="h-12 w-12 text-red-500 mb-2" />
+                    <p className="text-center text-sm px-4">Camera access denied. Please check your browser settings.</p>
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -171,7 +242,7 @@ const QRScanner: React.FC = () => {
                       duration: 1.5,
                       ease: "linear"
                     }}
-                    className="absolute left-0 right-0 h-0.5 bg-primary"
+                    className="absolute left-0 right-0 h-0.5 bg-primary z-10"
                   />
                 )}
               </div>
@@ -185,7 +256,7 @@ const QRScanner: React.FC = () => {
             </CardContent>
             <CardFooter className="flex flex-col space-y-2">
               <Button
-                onClick={simulateScan}
+                onClick={startScanning}
                 className="w-full"
                 disabled={scanning}
                 variant="default"
