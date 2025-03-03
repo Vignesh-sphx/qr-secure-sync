@@ -20,7 +20,7 @@ const Index = () => {
     {
       icon: <Shield className="h-8 w-8 text-primary" />,
       title: 'Offline-First Security',
-      description: 'Transactions are locally encrypted and securely stored, ready to be synced when you're back online.',
+      description: 'Transactions are locally encrypted and securely stored, ready to be synced when you\'re back online.',
       action: () => navigate('/scan')
     },
     {
