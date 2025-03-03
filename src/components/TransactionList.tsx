@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Transaction, StoredTransaction } from '../types';
@@ -11,7 +10,7 @@ import { Badge } from './ui/badge';
 import { toast } from './ui/use-toast';
 import { 
   CloudOff, 
-  CloudSync, 
+  CloudUpload, 
   ArrowDownUp,
   Clock,
   CheckCircle2,
@@ -23,11 +22,9 @@ const TransactionList: React.FC = () => {
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(getNetworkState().isOnline);
   
-  // Load transactions on mount
   useEffect(() => {
     loadTransactions();
     
-    // Setup network status listener
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     
@@ -58,7 +55,6 @@ const TransactionList: React.FC = () => {
     setIsSyncing(true);
     
     try {
-      // Find all pending transactions
       const pendingTransactions = transactions.filter(
         t => t.status === 'pending'
       );
@@ -72,12 +68,10 @@ const TransactionList: React.FC = () => {
         return;
       }
       
-      // Sync each transaction one by one (in a real app, we'd optimize this)
       for (const transaction of pendingTransactions) {
         await syncTransactionToBlockchain(transaction);
       }
       
-      // Reload the transactions to show updated status
       loadTransactions();
       
       toast({
@@ -101,7 +95,7 @@ const TransactionList: React.FC = () => {
       case 'pending':
         return <Clock className="h-4 w-4 text-orange-500" />;
       case 'synced':
-        return <CloudSync className="h-4 w-4 text-blue-500" />;
+        return <CloudUpload className="h-4 w-4 text-blue-500" />;
       case 'verified':
         return <CheckCircle2 className="h-4 w-4 text-green-500" />;
       default:
@@ -122,7 +116,6 @@ const TransactionList: React.FC = () => {
     }
   };
   
-  // Format date for display
   const formatDate = (timestamp: number) => {
     const date = new Date(timestamp);
     return date.toLocaleString(undefined, {
@@ -150,12 +143,12 @@ const TransactionList: React.FC = () => {
         >
           {isSyncing ? (
             <>
-              <CloudSync className="mr-2 h-4 w-4 animate-spin" />
+              <CloudUpload className="mr-2 h-4 w-4 animate-spin" />
               Syncing...
             </>
           ) : isOnline ? (
             <>
-              <CloudSync className="mr-2 h-4 w-4" />
+              <CloudUpload className="mr-2 h-4 w-4" />
               Sync All
             </>
           ) : (
