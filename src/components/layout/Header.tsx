@@ -4,12 +4,15 @@ import { Link, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { MenuIcon, X } from 'lucide-react';
+import { SignedIn, SignedOut, UserButton, useUser } from '@clerk/clerk-react';
+import { Button } from '@/components/ui/button';
 import NetworkStatus from '../NetworkStatus';
 
 const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user } = useUser();
   
   useEffect(() => {
     const handleScroll = () => {
@@ -74,21 +77,48 @@ const Header: React.FC = () => {
               {item.label}
             </Link>
           ))}
+          
+          <SignedIn>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm font-medium">
+                {user?.firstName || user?.username}
+              </div>
+              <UserButton afterSignOutUrl="/" />
+            </div>
+          </SignedIn>
+          
+          <SignedOut>
+            <div className="flex items-center space-x-4">
+              <Link to="/sign-in">
+                <Button variant="ghost" size="sm">Sign In</Button>
+              </Link>
+              <Link to="/sign-up">
+                <Button size="sm">Sign Up</Button>
+              </Link>
+            </div>
+          </SignedOut>
+          
           <NetworkStatus />
         </nav>
         
         {/* Mobile Menu Button */}
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="md:hidden focus:outline-none"
-          aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          {isMobileMenuOpen ? (
-            <X className="h-6 w-6 text-foreground" />
-          ) : (
-            <MenuIcon className="h-6 w-6 text-foreground" />
-          )}
-        </button>
+        <div className="md:hidden flex items-center space-x-4">
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+          
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="focus:outline-none"
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+          >
+            {isMobileMenuOpen ? (
+              <X className="h-6 w-6 text-foreground" />
+            ) : (
+              <MenuIcon className="h-6 w-6 text-foreground" />
+            )}
+          </button>
+        </div>
       </div>
       
       {/* Mobile Navigation */}
@@ -116,6 +146,18 @@ const Header: React.FC = () => {
                   {item.label}
                 </Link>
               ))}
+              
+              <SignedOut>
+                <div className="py-2 space-y-2">
+                  <Link to="/sign-in" className="block">
+                    <Button variant="ghost" className="w-full justify-start">Sign In</Button>
+                  </Link>
+                  <Link to="/sign-up" className="block">
+                    <Button className="w-full justify-start">Sign Up</Button>
+                  </Link>
+                </div>
+              </SignedOut>
+              
               <div className="py-2">
                 <NetworkStatus />
               </div>
