@@ -84,7 +84,9 @@ const Profile = () => {
                       </div>
                       <div className="bg-muted/50 p-4 rounded-lg">
                         <div className="text-xl font-bold">
-                          {user?.publicMetadata?.transactionCount || 0}
+                          {typeof user?.publicMetadata?.transactionCount === 'number' 
+                            ? user.publicMetadata.transactionCount 
+                            : 0}
                         </div>
                         <div className="text-sm text-muted-foreground">Transactions</div>
                       </div>
