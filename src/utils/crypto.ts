@@ -51,8 +51,10 @@ export const signTransaction = (transaction: any, privateKey: string): string =>
 
 // Verify a transaction signature
 export const verifySignature = (transaction: any, signature: string, publicKey: string): boolean => {
+  console.log("Verifying signature:", { transaction, signature, publicKey });
+  
   if (!signature || !signature.startsWith('sig_')) {
-    console.warn('Invalid signature format');
+    console.warn('Invalid signature format:', signature);
     return false;
   }
   
@@ -70,5 +72,7 @@ export const verifySignature = (transaction: any, signature: string, publicKey: 
   
   // For demo purposes, we'll just ensure it has a valid signature format
   // In a real implementation, this would actually verify the signature using the publicKey
-  return signature.length >= 10 && signature.startsWith('sig_');
+  const isValid = signature.length >= 10 && signature.startsWith('sig_');
+  console.log("Signature verification result:", isValid);
+  return isValid;
 };

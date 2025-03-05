@@ -26,9 +26,10 @@ const QRScanner: React.FC = () => {
   const { updateCredits } = useCredits();
   
   const handleScan = (data: string | null) => {
-    if (data) {
+    if (data && !scannedData) {
       try {
-        console.log("QR data received:", data);
+        console.log("QR scan successful, raw data:", data);
+        
         // Parse the QR code data
         const parsedData: QRData = JSON.parse(data);
         console.log("Parsed QR data:", parsedData);
@@ -45,8 +46,12 @@ const QRScanner: React.FC = () => {
           throw new Error("Invalid transaction data structure");
         }
         
+        // Set the scanned data and stop scanning
         setScannedData(parsedData);
         setScanning(false);
+        
+        // Immediately start processing the transaction
+        processTransaction(parsedData);
       } catch (error) {
         console.error('Error parsing QR code data:', error);
         setErrorMessage('Invalid QR code format. Please try again.');
@@ -74,11 +79,12 @@ const QRScanner: React.FC = () => {
     setScanning(true);
     setProcessingStatus('idle');
     setErrorMessage(null);
+    setScannedData(null); // Reset scanned data when starting new scan
     
     try {
       // Check if browser supports getUserMedia
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         // Clean up stream when done
         stream.getTracks().forEach(track => track.stop());
         setCameraPermission(true);
@@ -98,8 +104,6 @@ const QRScanner: React.FC = () => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     
-    // In a real app, this would process the image and scan for QR codes
-    // For this demo, we'll show an error message as this feature is not implemented
     toast({
       title: "Not Implemented",
       description: "QR code scanning from images is not implemented in this demo. Please use the camera instead.",
@@ -110,20 +114,20 @@ const QRScanner: React.FC = () => {
     e.target.value = '';
   };
   
-  const processTransaction = async () => {
-    if (!scannedData) return;
+  const processTransaction = async (data: QRData) => {
+    if (!data) return;
     
     try {
-      console.log("Processing transaction:", scannedData);
+      console.log("Processing transaction:", data);
       
       // Verify the signature
       setProcessingStatus('verifying');
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
       
       const isValid = verifySignature(
-        scannedData.transaction, 
-        scannedData.transaction.signature || '', 
-        scannedData.publicKey
+        data.transaction, 
+        data.transaction.signature || '', 
+        data.publicKey
       );
       
       if (!isValid) {
@@ -136,23 +140,23 @@ const QRScanner: React.FC = () => {
       // Store locally
       setProcessingStatus('storing');
       await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
-      saveTransaction(scannedData.transaction);
+      saveTransaction(data.transaction);
       
-      console.log("Updating credits with transaction:", scannedData.transaction);
+      console.log("Updating credits with transaction:", data.transaction);
       // Update user's credits based on the transaction
-      updateCredits(scannedData.transaction);
+      updateCredits(data.transaction);
       
       // Check if online and sync to blockchain
       const { isOnline } = getNetworkState();
       if (isOnline) {
         setProcessingStatus('syncing');
-        await syncTransactionToBlockchain(scannedData.transaction);
+        await syncTransactionToBlockchain(data.transaction);
       }
       
       setProcessingStatus('complete');
       toast({
         title: "Transaction Processed",
-        description: `${scannedData.transaction.amount.toFixed(2)} credits received. ${isOnline 
+        description: `${data.transaction.amount.toFixed(2)} credits received. ${isOnline 
           ? "Transaction has been verified and synced." 
           : "Transaction will sync when online."}`,
       });
@@ -176,11 +180,12 @@ const QRScanner: React.FC = () => {
     setErrorMessage(null);
   };
   
-  useEffect(() => {
-    if (scannedData && processingStatus === 'idle') {
-      processTransaction();
-    }
-  }, [scannedData]);
+  // We don't need this useEffect anymore since we're processing immediately in handleScan
+  // useEffect(() => {
+  //   if (scannedData && processingStatus === 'idle') {
+  //     processTransaction();
+  //   }
+  // }, [scannedData]);
   
   return (
     <div className="w-full max-w-md mx-auto">
@@ -209,7 +214,9 @@ const QRScanner: React.FC = () => {
                       }}
                       onResult={(result, error) => {
                         if (result) {
-                          handleScan(result.getText());
+                          const text = result.getText();
+                          console.log("Raw QR scan result:", text);
+                          handleScan(text);
                         }
                         if (error && error?.name !== 'NotFoundException') {
                           console.error('QR scan error:', error);
@@ -218,6 +225,7 @@ const QRScanner: React.FC = () => {
                       containerStyle={{ width: '100%', height: '100%' }}
                       videoStyle={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       scanDelay={500}
+                      videoId="qr-video-element" // Add unique ID for debugging
                     />
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="w-48 h-48 border-2 border-primary/70 rounded-lg"></div>
