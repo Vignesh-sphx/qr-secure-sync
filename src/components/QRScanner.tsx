@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { QrReader } from 'react-qr-reader';
@@ -31,6 +32,19 @@ const QRScanner: React.FC = () => {
         // Parse the QR code data
         const parsedData: QRData = JSON.parse(data);
         console.log("Parsed QR data:", parsedData);
+        
+        // Validate the scanned data structure
+        if (!parsedData.transaction || !parsedData.publicKey) {
+          throw new Error("Invalid QR data format: missing transaction or publicKey");
+        }
+        
+        if (!parsedData.transaction.id || 
+            typeof parsedData.transaction.amount !== 'number' || 
+            !parsedData.transaction.sender || 
+            !parsedData.transaction.recipient) {
+          throw new Error("Invalid transaction data structure");
+        }
+        
         setScannedData(parsedData);
         setScanning(false);
       } catch (error) {

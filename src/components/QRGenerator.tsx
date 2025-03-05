@@ -43,8 +43,9 @@ const QRGenerator: React.FC = () => {
     
     setIsGenerating(true);
     
-    const sender = "wallet_" + Math.random().toString(36).substring(2, 10);
-    const publicKey = "pk_" + Math.random().toString(36).substring(2, 15);
+    // Use stable, predictable values for testing
+    const sender = "wallet_sender" + Math.random().toString(36).substring(2, 6);
+    const publicKey = "pk_" + Math.random().toString(36).substring(2, 10);
     
     const transaction: Transaction = {
       id: generateId(),
@@ -56,7 +57,7 @@ const QRGenerator: React.FC = () => {
       status: 'pending'
     };
     
-    const fakePrivateKey = "sk_" + Math.random().toString(36).substring(2, 15);
+    const fakePrivateKey = "sk_" + Math.random().toString(36).substring(2, 10);
     
     const signature = signTransaction(transaction, fakePrivateKey);
     transaction.signature = signature;
@@ -66,7 +67,7 @@ const QRGenerator: React.FC = () => {
       publicKey
     };
     
-    // To ensure the QR code can be correctly processed, let's console.log it
+    // Debug logging to ensure QR data is valid
     console.log("Generated QR data:", newQrData);
     console.log("QR data as string:", JSON.stringify(newQrData));
     

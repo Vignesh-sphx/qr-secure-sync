@@ -9,6 +9,10 @@ import { AlertCircle, Camera } from 'lucide-react';
 const Scan = () => {
   const [showPermissionHelp, setShowPermissionHelp] = useState(false);
   
+  const handleError = () => {
+    setShowPermissionHelp(true);
+  };
+  
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -47,7 +51,6 @@ const Scan = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          onError={() => setShowPermissionHelp(true)}
         >
           <QRScanner />
         </motion.div>

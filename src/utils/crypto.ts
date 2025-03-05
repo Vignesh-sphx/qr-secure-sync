@@ -64,7 +64,7 @@ export const verifySignature = (transaction: any, signature: string, publicKey: 
       typeof transaction.amount !== 'number' || 
       !transaction.sender || 
       !transaction.recipient) {
-    console.warn('Invalid transaction format');
+    console.warn('Invalid transaction format', transaction);
     return false;
   }
   
