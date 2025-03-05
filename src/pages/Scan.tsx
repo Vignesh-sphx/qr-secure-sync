@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import QRScanner from '@/components/QRScanner';
 import Header from '@/components/layout/Header';
@@ -8,6 +8,28 @@ import { AlertCircle, Camera } from 'lucide-react';
 
 const Scan = () => {
   const [showPermissionHelp, setShowPermissionHelp] = useState(false);
+  
+  // Check camera permission on component mount
+  useEffect(() => {
+    checkCameraPermission();
+  }, []);
+  
+  const checkCameraPermission = async () => {
+    try {
+      // Try to access camera to prompt for permission
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment' } 
+        });
+        // Clean up stream
+        stream.getTracks().forEach(track => track.stop());
+        setShowPermissionHelp(false);
+      }
+    } catch (err) {
+      console.error('Camera permission check failed:', err);
+      setShowPermissionHelp(true);
+    }
+  };
   
   const handleError = () => {
     setShowPermissionHelp(true);

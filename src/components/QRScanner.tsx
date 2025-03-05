@@ -13,7 +13,7 @@ import { toast } from './ui/use-toast';
 import { Loader2, Check, AlertCircle, Camera, QrCode } from 'lucide-react';
 
 const QRScanner: React.FC = () => {
-  const [scanning, setScanning] = useState<boolean>(false);
+  const [scanning, setScanning] = useState<boolean>(true); // Start scanning by default
   const [scannedData, setScannedData] = useState<QRData | null>(null);
   const [processingStatus, setProcessingStatus] = useState<
     'idle' | 'verifying' | 'storing' | 'syncing' | 'complete' | 'error'
@@ -23,6 +23,34 @@ const QRScanner: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { updateCredits } = useCredits();
+  
+  // Auto-start camera when component mounts
+  useEffect(() => {
+    checkCameraPermission();
+  }, []);
+
+  const checkCameraPermission = async () => {
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: 'environment' } 
+        });
+        
+        // Clean up stream
+        stream.getTracks().forEach(track => track.stop());
+        
+        setCameraPermission(true);
+        setScanning(true); // Start scanning once permission is confirmed
+      } else {
+        setCameraPermission(false);
+        console.error('Camera not supported on this device or browser');
+      }
+    } catch (err) {
+      console.error('Camera permission error:', err);
+      setCameraPermission(false);
+      handleError(err as Error);
+    }
+  };
   
   const handleScan = (data: string | null) => {
     if (data && !scannedData) {
@@ -91,20 +119,7 @@ const QRScanner: React.FC = () => {
     setProcessingStatus('idle');
     setErrorMessage(null);
     setScannedData(null); // Reset scanned data when starting new scan
-    
-    try {
-      // Check if browser supports getUserMedia
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        // Clean up stream when done
-        stream.getTracks().forEach(track => track.stop());
-        setCameraPermission(true);
-      } else {
-        throw new Error('Camera not supported on this device or browser');
-      }
-    } catch (err) {
-      handleError(err as Error);
-    }
+    checkCameraPermission();
   };
   
   const handleUpload = () => {
@@ -189,6 +204,7 @@ const QRScanner: React.FC = () => {
     setScannedData(null);
     setProcessingStatus('idle');
     setErrorMessage(null);
+    startScanning();
   };
   
   return (

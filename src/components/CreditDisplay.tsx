@@ -1,13 +1,21 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useCredits } from '@/hooks/useCredits';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { CreditCard, Plus, Minus } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const CreditDisplay: React.FC = () => {
-  const { credits, isLoading } = useCredits();
+  const { credits, isLoading, refreshCredits } = useCredits();
+  const location = useLocation();
+
+  // Refresh credits whenever the component mounts or location changes
+  // This ensures credits update when navigating to the profile page
+  useEffect(() => {
+    refreshCredits();
+  }, [location.pathname, refreshCredits]);
 
   if (isLoading) {
     return (
