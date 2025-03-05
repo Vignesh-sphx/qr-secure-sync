@@ -27,8 +27,10 @@ const QRScanner: React.FC = () => {
   const handleScan = (data: string | null) => {
     if (data) {
       try {
+        console.log("QR data received:", data);
         // Parse the QR code data
         const parsedData: QRData = JSON.parse(data);
+        console.log("Parsed QR data:", parsedData);
         setScannedData(parsedData);
         setScanning(false);
       } catch (error) {
@@ -83,45 +85,23 @@ const QRScanner: React.FC = () => {
     if (!files || files.length === 0) return;
     
     // In a real app, this would process the image and scan for QR codes
-    // For this demo, we'll use a fallback simulation if file upload is used
-    simulateScan();
+    // For this demo, we'll show an error message as this feature is not implemented
+    toast({
+      title: "Not Implemented",
+      description: "QR code scanning from images is not implemented in this demo. Please use the camera instead.",
+      variant: "destructive"
+    });
     
     // Reset the input so the same file can be selected again
     e.target.value = '';
-  };
-  
-  // Kept as a fallback for testing when camera is not available
-  const simulateScan = () => {
-    setScanning(true);
-    
-    // Simulate a delay for scanning
-    setTimeout(() => {
-      // Create a fake transaction for demo purposes
-      const fakeTransaction: Transaction = {
-        id: Math.random().toString(36).substring(2, 15),
-        amount: Math.random() * 100,
-        recipient: "wallet_" + Math.random().toString(36).substring(2, 10),
-        sender: "wallet_" + Math.random().toString(36).substring(2, 10),
-        timestamp: Date.now(),
-        description: "Demo transaction",
-        status: 'pending',
-        signature: "sig_" + Math.random().toString(36).substring(2, 15)
-      };
-      
-      const fakeQRData: QRData = {
-        transaction: fakeTransaction,
-        publicKey: "pk_" + Math.random().toString(36).substring(2, 15)
-      };
-      
-      setScannedData(fakeQRData);
-      setScanning(false);
-    }, 2000);
   };
   
   const processTransaction = async () => {
     if (!scannedData) return;
     
     try {
+      console.log("Processing transaction:", scannedData);
+      
       // Verify the signature
       setProcessingStatus('verifying');
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
@@ -133,6 +113,7 @@ const QRScanner: React.FC = () => {
       );
       
       if (!isValid) {
+        console.error("Invalid signature detected");
         setProcessingStatus('error');
         setErrorMessage('Invalid signature. Transaction may be tampered with.');
         return;
@@ -143,6 +124,7 @@ const QRScanner: React.FC = () => {
       await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
       saveTransaction(scannedData.transaction);
       
+      console.log("Updating credits with transaction:", scannedData.transaction);
       // Update user's credits based on the transaction
       updateCredits(scannedData.transaction);
       

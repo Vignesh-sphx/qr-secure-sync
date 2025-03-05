@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
@@ -64,6 +65,10 @@ const QRGenerator: React.FC = () => {
       transaction,
       publicKey
     };
+    
+    // To ensure the QR code can be correctly processed, let's console.log it
+    console.log("Generated QR data:", newQrData);
+    console.log("QR data as string:", JSON.stringify(newQrData));
     
     saveTransaction(transaction);
     
