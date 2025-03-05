@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
@@ -43,9 +42,8 @@ const QRGenerator: React.FC = () => {
     
     setIsGenerating(true);
     
-    // Use stable, predictable values for testing
-    const sender = "wallet_sender" + Math.random().toString(36).substring(2, 6);
-    const publicKey = "pk_" + Math.random().toString(36).substring(2, 10);
+    const sender = "wallet_" + Math.random().toString(36).substring(2, 6);
+    const publicKey = "pk_demo";
     
     const transaction: Transaction = {
       id: generateId(),
@@ -53,11 +51,11 @@ const QRGenerator: React.FC = () => {
       recipient,
       sender,
       timestamp: Date.now(),
-      description,
+      description: description || "Transfer",
       status: 'pending'
     };
     
-    const fakePrivateKey = "sk_" + Math.random().toString(36).substring(2, 10);
+    const fakePrivateKey = "sk_demo";
     
     const signature = signTransaction(transaction, fakePrivateKey);
     transaction.signature = signature;
@@ -67,9 +65,10 @@ const QRGenerator: React.FC = () => {
       publicKey
     };
     
-    // Debug logging to ensure QR data is valid
     console.log("Generated QR data:", newQrData);
-    console.log("QR data as string:", JSON.stringify(newQrData));
+    const qrString = JSON.stringify(newQrData);
+    console.log("QR data string length:", qrString.length);
+    console.log("QR data as string:", qrString);
     
     saveTransaction(transaction);
     
@@ -81,7 +80,7 @@ const QRGenerator: React.FC = () => {
         title: "QR Code Generated",
         description: "Transaction has been digitally signed and is ready to share.",
       });
-    }, 1000);
+    }, 500);
   };
   
   const handleReset = () => {

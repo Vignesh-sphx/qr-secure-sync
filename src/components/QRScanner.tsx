@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { QrReader } from 'react-qr-reader';
@@ -30,8 +29,20 @@ const QRScanner: React.FC = () => {
       try {
         console.log("QR scan successful, raw data:", data);
         
-        // Parse the QR code data
-        const parsedData: QRData = JSON.parse(data);
+        // Parse the QR code data - with more robust error handling
+        let parsedData: QRData;
+        try {
+          parsedData = JSON.parse(data);
+        } catch (e) {
+          console.error("Failed to parse QR data:", e);
+          toast({
+            title: "Invalid QR Code",
+            description: "The QR code doesn't contain valid transaction data.",
+            variant: "destructive"
+          });
+          throw new Error("Invalid QR data format: not valid JSON");
+        }
+        
         console.log("Parsed QR data:", parsedData);
         
         // Validate the scanned data structure
@@ -120,9 +131,9 @@ const QRScanner: React.FC = () => {
     try {
       console.log("Processing transaction:", data);
       
-      // Verify the signature
+      // Verify the signature - now much faster
       setProcessingStatus('verifying');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+      await new Promise(resolve => setTimeout(resolve, 300)); // Reduced simulation delay
       
       const isValid = verifySignature(
         data.transaction, 
@@ -139,7 +150,7 @@ const QRScanner: React.FC = () => {
       
       // Store locally
       setProcessingStatus('storing');
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
+      await new Promise(resolve => setTimeout(resolve, 300)); // Reduced simulation delay
       saveTransaction(data.transaction);
       
       console.log("Updating credits with transaction:", data.transaction);
@@ -179,13 +190,6 @@ const QRScanner: React.FC = () => {
     setProcessingStatus('idle');
     setErrorMessage(null);
   };
-  
-  // We don't need this useEffect anymore since we're processing immediately in handleScan
-  // useEffect(() => {
-  //   if (scannedData && processingStatus === 'idle') {
-  //     processTransaction();
-  //   }
-  // }, [scannedData]);
   
   return (
     <div className="w-full max-w-md mx-auto">

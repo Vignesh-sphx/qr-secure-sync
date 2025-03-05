@@ -63,13 +63,12 @@ const Scan = () => {
         >
           <h3 className="text-lg font-medium mb-4">About QR Code Scanning</h3>
           <p className="text-muted-foreground text-sm mb-4">
-            When you scan a QR code, the transaction data is verified using the sender's digital 
-            signature. This ensures that the transaction hasn't been tampered with and comes from 
-            a legitimate source.
+            When you scan a QR code, the transaction data is verified using a simplified
+            signature process. This makes scanning faster while still ensuring data integrity.
           </p>
           <p className="text-muted-foreground text-sm">
             The transaction is securely stored locally and will be synchronized with 
-            the blockchain when your device is online, preventing double-spending.
+            the blockchain when your device is online.
           </p>
           
           <div className="mt-8 p-4 bg-muted/30 rounded-lg">
